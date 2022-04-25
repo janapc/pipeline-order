@@ -1,0 +1,73 @@
+service: pipeline-order
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage,'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    SNS_ENDPOINT_LOCAL: "http://127.0.0.1:4002"
+    SNS_TOPIC_RECEIVE: "${self:service}-${self:provider.stage}-sns-receive-order"
+    SNS_TOPIC_PAYMENT: "${self:service}-${self:provider.stage}-sns-process-payment"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - SNS:Publish
+      Resource: "*"
+
+custom:
+  serverless-offline-sns:
+    port: 4002
+    debug: false
+  sns_arn:
+    receive:
+      local: "arn:aws:sns:us-east-1:123456789012:${self:provider.environment.SNS_TOPIC_RECEIVE}"
+      dev: { "Fn::Join" : ["", ["arn:aws:sns:${self:provider.region}:", { "Ref" : "AWS::AccountId" }, ":${self:provider.environment.SNS_TOPIC_RECEIVE}" ] ]  }
+    payment:
+      local: "arn:aws:sns:us-east-1:123456789012:${self:provider.environment.SNS_TOPIC_PAYMENT}"
+      dev: { "Fn::Join" : ["", ["arn:aws:sns:${self:provider.region}:", { "Ref" : "AWS::AccountId" }, ":${self:provider.environment.SNS_TOPIC_PAYMENT}" ] ]  }
+      
+resources:
+  Resources:
+    receiveOrder:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: "${self:provider.environment.SNS_TOPIC_RECEIVE}"
+    processPayment:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: "${self:provider.environment.SNS_TOPIC_PAYMENT}"
+
+functions:
+  receiveOrder: 
+    handler: functions/receive-order.handler
+    events:
+      - http:
+          path: receive-order
+          method: post
+    environment:
+      SNS_ARN: "${self:custom.sns_arn.receive.${self:provider.stage}}"
+
+  
+  processPayment:
+    handler: functions/process-payment.handler
+    events:
+      - sns: 
+          arn: "${self:custom.sns_arn.receive.${self:provider.stage}}"
+          topicName: "${self:provider.environment.SNS_TOPIC_RECEIVE}"
+    environment:
+      SNS_ARN: "${self:custom.sns_arn.payment.${self:provider.stage}}"
+
+  sendOrder:
+    handler: functions/send-order.handler
+    events:
+      - sns: 
+          arn: "${self:custom.sns_arn.payment.${self:provider.stage}}"
+          topicName: "${self:provider.environment.SNS_TOPIC_PAYMENT}"
+    environment: ${file(config.dev.yml)}
+
+plugins:
+  - serverless-offline
+  - serverless-offline-sns

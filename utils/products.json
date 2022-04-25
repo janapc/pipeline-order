@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Geladeira",
+      "description": "Geladeira branca",
+      "value": "3500",
+      "amount": 5
+    },
+    {
+      "id": 2,
+      "title": "Fogão",
+      "description": "Fogão inox 4 bocas",
+      "value": "1500",
+      "amount": 0
+    },
+    {
+      "id": 3,
+      "title": "Microondas",
+      "description": "Microondas preto",
+      "value": "500",
+      "amount": 2
+    }
+  ]
+}

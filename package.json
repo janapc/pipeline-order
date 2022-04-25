@@ -1,0 +1,22 @@
+{
+  "name": "pipeline-order",
+  "version": "1.0.0",
+  "description": "This project is a pipeline of orders from the received to the sent product.",
+  "main": "functions/receive-order.js",
+  "scripts": {
+    "deploy:dev": "sls deploy --stage dev",
+    "start": "sls offline start --stage local"
+  },
+  "keywords": [],
+  "author": "Janaina Pedrina",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1119.0",
+    "nodemailer": "^6.7.3",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "serverless-offline": "^8.7.0",
+    "serverless-offline-sns": "^0.76.0"
+  }
+}
