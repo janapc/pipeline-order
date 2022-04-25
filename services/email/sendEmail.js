@@ -42,12 +42,12 @@ module.exports.sendEmail = async (data) => {
     },
   });
 
-  const formatMessageTicket = formatMessage(data);
+  const message = formatMessage(data);
 
   return await transporter.sendMail({
     from: '"Produtinhos" <produtinhos@empresa.com>',
     to: data.email,
     subject: "Seu produto está a caminho",
-    html: formatMessageTicket,
+    html: message,
   });
 };
